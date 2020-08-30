@@ -1,0 +1,133 @@
+import java.util.ArrayList; 
+import java.util.Scanner; 
+class Map<K, V>{
+    class MapNode<K, V>{
+        K key;
+        V value;
+        MapNode<K, V> next;
+        public MapNode(K key, V value){
+            this.key = key;
+            this.value  = value;
+            this.next = null;
+        }
+        
+    }
+    ArrayList<MapNode<K, V>> buckets;
+    int size;
+    int numBuckets;
+    final double DLF = 0.75;
+    public Map(){
+        size = 0;
+        numBuckets =8;
+        buckets = new ArrayList<MapNode<K, V>>(numBuckets);
+        for(int i=0;i<numBuckets;i++){
+            buckets.add(null);
+        }
+    }
+    private int getBucketInd(K key){
+        int hashCode =  key.hashCode();
+        return (hashCode % numBuckets);
+    }
+    public V put(K key, V value){
+        int bucketInd = getBucketInd(key);
+        MapNode<K,V> head = buckets.get(bucketInd);
+        while(head != null){
+            if(head.key.equals(key)){
+                V prevVal = head.value;
+                head.value = value;
+                return prevVal;
+            }
+        }
+        MapNode<K,V> newNode = new MapNode<K,V>(key, value);
+        head = buckets.get(bucketInd);
+        newNode.next = head;
+        buckets.set(bucketInd, newNode);
+        size++;
+        double loadFactor = (size * 1.0) / numBuckets;
+        if(loadFactor > DLF){
+            rehash();
+        }
+        return null;
+    }
+    private void rehash(){
+        size=0;
+        numBuckets *= 2;
+        ArrayList<MapNode<K,V>> temp = buckets;
+        buckets = new ArrayList<MapNode<K,V>>(numBuckets);
+        for(int i=0;i<numBuckets;i++){
+            buckets.add(null);
+        }
+        for(int i=0;i<temp.size();i++){
+            MapNode<K, V> head = temp.get(i);
+            while(head != null){
+                K key = head.key;
+                V value = head.value;
+                put(key, value);
+                head = head.next;
+            }
+            
+        }
+    }
+    public V get(K  key){
+        int bucketInd = getBucketInd(key);
+        MapNode<K, V> head = buckets.get(bucketInd);
+        while(head != null){
+            if(head.key.equals(key)){
+                return head.value;
+            }
+        }
+        return null;
+    }
+    public void printMap(){
+        for(int i=0;i<buckets.size();i++){
+            MapNode<K, V> head = buckets.get(i);
+            while(head != null){
+                K key = head.key;
+                V value = head.value;
+                System.out.println("key: "+key+" value: "+value);
+                head = head.next;
+            }
+            
+        }
+    }
+}
+public class Main{
+    public static void main(String[] args){
+
+		boolean check = true;
+        Scanner sc = new Scanner(System.in);
+        int input;
+        Map<Integer, String> map = new Map<Integer, String>(); 
+        while(check){
+            System.out.println("Want to proceed?? 0 or 1");
+            input = sc.nextInt();
+            if(input == 0){
+                check = false;
+                break;
+            }
+            else{
+                System.out.println("for put: 1");
+                System.out.println("for get: 2");
+                System.out.println("for print: 3");
+                input = sc.nextInt();
+                if(input == 1){
+                    System.out.println("Enter Key");
+                    int key = sc.nextInt();
+                    System.out.println("Enter Value");
+                    String value = sc.next();
+                    value = map.put(key, value);
+                    System.out.println("Previous Value is "+value);
+                }
+                else if(input == 2){
+                    System.out.println("Enter Key");
+                    int key = sc.nextInt();
+                    String value = map.get(key);
+                    System.out.println("Value is "+value);
+                }
+                else{
+                    map.printMap();
+                }
+            }
+        }
+    }
+}
